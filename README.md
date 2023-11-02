@@ -1,23 +1,15 @@
 [![Arduino Lint](https://github.com/esp-arduino-libs/ESP32_Knob/actions/workflows/arduino_lint.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Knob/actions/workflows/arduino_lint.yml) [![pre-commit](https://github.com/esp-arduino-libs/ESP32_Knob/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Knob/actions/workflows/pre-commit.yml) [![Build Test Apps](https://github.com/esp-arduino-libs/ESP32_Knob/actions/workflows/build_test.yml/badge.svg)](https://github.com/esp-arduino-libs/ESP32_Knob/actions/workflows/build_test.yml)
 
+# ESP32_Knob
 
-## Component Knob
+ESP32_Knob is an Arduino library designed for driving encoders (such as EC11) using ESP SoCs. This library has implemented the quadrature decoding function similar to the ESP PCNT peripheral through software. It is useful for chips that do not have this peripheral, such as ESP32-C2 and ESP32-C3.
 
-`Knob` is the component that provides the software PCNT, it can be used on chips(esp32c2, esp32c3) that do not have PCNT hardware capabilities. By using this component, you can quickly use a physical encoder, such as the EC11 encoder.
+ESP32_Knob encapsulates the component from the [Espressif Components Registry](https://components.espressif.com/). It is developed based on [arduino-esp32](https://github.com/espressif/arduino-esp32) and can be easily downloaded and integrated into the Arduino IDE.
 
-Features:
+## Features
 
-1. Support multiple knobs
-2. Support each event can register its own callback
-3. Support setting the upper and lower count limits
-
-List of supported events:
-
- * Knob left
- * Knob right
- * Knob high limit
- * Knob low limit
- * Knob back to zero
+* Support for all ESP SoCs.
+* Support multiple events, including `left`, `right`, `high limit`, `low limit`, and `back to zero`.
 
 ## Supported Drivers
 
@@ -58,11 +50,8 @@ static void knob_left_cb(void *arg, void *data)
 knob->begin();
 knob->registerEvent(KNOB_LEFT, knob_left_cb, NULL);
 
-// Release the ESP_IOExpander object
+// Release the ESP_Knob object
 delete knob;
 ```
 
-`Note`: This component is only suitable for decoding low-speed rotary encoders such as EC11, and does not guarantee the complete correctness of the pulse count. For high-speed and accurate calculations, please use hardware [PCNT](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32/api-reference/peripherals/pcnt.html?highlight=pcnt)
-
-* | Hardware PCNT Supported Targets | ESP32 | ESP32-C6 | ESP32-H2 | ESP32-S2 | ESP32-S3 |
-  | ------------------------------- | ----- | -------- | -------- | -------- | -------- |
+**Note**: This component is only suitable for decoding low-speed rotary encoders such as EC11, and does not guarantee the complete correctness of the pulse count. For high-speed and accurate calculations, please use hardware [PCNT](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html?highlight=pcnt)

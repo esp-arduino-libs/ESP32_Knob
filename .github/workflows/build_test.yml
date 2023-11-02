@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        idf_ver: ["v4.4.5", "v5.0"]
+        idf_ver: ["v4.4.5", "v4.4.6", "v5.1"]
         idf_target: ["esp32"]
     runs-on: ubuntu-20.04
     container: espressif/idf:${{ matrix.idf_ver }}
@@ -25,4 +25,5 @@ jobs:
           export PEDANTIC_FLAGS="-DIDF_CI_BUILD -Werror -Werror=deprecated-declarations -Werror=unused-variable -Werror=unused-but-set-variable -Werror=unused-function"
           export EXTRA_CFLAGS="${PEDANTIC_FLAGS} -Wstrict-prototypes"
           export EXTRA_CXXFLAGS="${PEDANTIC_FLAGS}"
+          idf.py set-target ${IDF_TARGET}
           idf.py build

@@ -5,14 +5,19 @@
  */
 #pragma once
 
-#include <stdint.h>
+#include <functional>
 #include "base/iot_knob.h"
+
+typedef struct {
+    void *knob;
+    void *usr_data;
+} event_callback_data_t;
 
 class ESP_Knob {
 public:
 
     /**
-     * @brief Construct a new esp knob object
+     * @brief Construct a new knob object
      *
      * @param gpio_encoder_a Encoder Pin A
      * @param gpio_encoder_b Encoder Pin B
@@ -20,141 +25,145 @@ public:
     ESP_Knob(int gpio_encoder_a, int gpio_encoder_b);
 
     /**
-     * @brief Construct a new esp knob object
-     *
-     * @param gpio_encoder_a Encoder Pin A
-     * @param gpio_encoder_b Encoder Pin B
-     * @param default_direction 0:positive increase   1:negative increase
-     */
-    ESP_Knob(int gpio_encoder_a, int gpio_encoder_b, int default_direction);
-
-    /**
-     * @brief Destroy the esp knob object
+     * @brief Destroy the knob object
      *
      */
     ~ESP_Knob(void);
 
     /**
-     * @brief create a esp knob
+     * @brief Invert the roatae direction of the knob
+     *
+     * @note  This function will change the direction of count value increment
+     * @note  This function should be called before `begin()`
+     *
+     */
+    void invertDirection(void);
+
+    /**
+     * @brief create a knob
      *
      */
     void begin(void);
 
     /**
-     * @brief Delete a esp knob
+     * @brief Delete a knob
      *
      */
     void del(void);
 
     /**
-     * @brief Register the knob left callback function
-     *
-     * @param cb Callback function
-     * @param usr_data user data
-     */
-    void registerLeftCb(knob_cb_t cb, void *usr_data);
-
-    /**
-     * @brief Register the knob right callback function
-     *
-     * @param cb Callback function
-     * @param usr_data user data
-     */
-    void registerRightCb(knob_cb_t cb, void *usr_data);
-
-    /**
-     * @brief Register the knob count reaches maximum limit callback function
-     *
-     * @param cb Callback function
-     * @param usr_data user data
-     */
-    void registerHighLimitCb(knob_cb_t cb, void *usr_data);
-
-    /**
-     * @brief Register the knob count reaches minimum limit callback function
-     *
-     * @param cb Callback function
-     * @param usr_data user data
-     */
-    void registerLowLimitCb(knob_cb_t cb, void *usr_data);
-
-    /**
-     * @brief Register the knob count reaches zero callback function
-     *
-     * @param cb Callback function
-     * @param usr_data user data
-     */
-    void registerZeroCb(knob_cb_t cb, void *usr_data);
-
-    /**
-     * @brief Register the knob event callback function
-     *
-     * @param event Knob event
-     * @param cb Callback function
-     * @param usr_data user data
-     */
-    void registerEvent(knob_event_t event, knob_cb_t cb, void *usr_data);
-
-    /**
-     * @brief Unregister the knob left callback function
-     *
-     */
-    void unregisterLeftCb(void);
-
-    /**
-     * @brief Unregister the knob right callback function
-     *
-     */
-    void unregisterRightCb(void);
-
-    /**
-     * @brief Unregister the knob count reaches maximum limit callback function
-     *
-     */
-    void unregisterHighLimitCb(void);
-
-    /**
-     * @brief Unregister the knob count reaches minimum limit callback function
-     *
-     */
-    void unregisterLowLimitCb(void);
-
-    /**
-     * @brief Unregister the knob count reaches zero callback function
-     *
-     */
-    void unregisterZeroCb(void);
-
-    /**
-     * @brief Unregister the knob event callback function
-     *
-     * @param event Knob event
-     */
-    void unregisterEvent(knob_event_t event);
-
-    /**
-     * @brief Get esp knob event
+     * @brief Get knob event
      *
      * @return knob_event_t Knob event
      */
     knob_event_t getEvent(void);
 
     /**
-     * @brief Get esp knob count value
+     * @brief Get knob count value
      *
      */
     int getCountValue(void);
 
     /**
-     * @brief Clear esp knob cout value to zero
+     * @brief Clear knob cout value to zero
      *
      */
     void clearCountValue(void);
 
-private:
-    knob_handle_t knob_handle; /**< Knob handle */
+    /**
+     * @brief Set the user date for all events
+     *
+     * @param usr_data
+     */
+    void setEventUserDate(void *usr_data);
 
-    int default_direction;          /*!< 0:positive increase   1:negative increase */
-    int gpio_encoder_a;             /*!< Encoder Pin A */
-    int gpio_encoder_b;             /*!< Encoder Pin B */
+    /**
+     * @brief Attach the knob left callback function
+     *
+     * @param callback Callback function
+     * @param usr_data user data
+     */
+    void attachLeftEventCallback(std::function<void(int, void *)> callback);
+
+    /**
+     * @brief Detach the knob right callback function
+     *
+     */
+    void detachLeftEventCallback(void);
+
+    /**
+     * @brief Attach the knob right callback function
+     *
+     * @param callback Callback function
+     * @param usr_data user data
+     */
+    void attachRightEventCallback(std::function<void(int, void *)> callback);
+
+    /**
+     * @brief Detach the knob right callback function
+     *
+     */
+    void detachRightEventCallback(void);
+
+    /**
+     * @brief Attach the knob count reaches maximum limit callback function
+     *
+     * @note  High limit is set to `1000` default
+     *
+     * @param callback Callback function
+     * @param usr_data user data
+     */
+    void attachHighLimitEventCallback(std::function<void(int, void *)> callback);
+
+    /**
+     * @brief Detach the knob count reaches maximum limit callback function
+     *
+     */
+    void detachHighLimitEventCallback(void);
+
+    /**
+     * @brief Attach the knob count reaches minimum limit callback function
+     *
+     * @note  Low limit is set to `-1000` default
+     *
+     * @param callback Callback function
+     * @param usr_data user data
+     */
+    void attachLowLimitEventCallback(std::function<void(int, void *)> callback);
+
+    /**
+     * @brief Detach the knob count reaches minimum limit callback function
+     *
+     */
+    void detachLowLimitEventCallback(void);
+
+    /**
+     * @brief Attach the knob count reaches zero callback function
+     *
+     * @param callback Callback function
+     * @param usr_data user data
+     */
+    void attachZeroEventCallback(std::function<void(int, void *)> callback);
+
+    /**
+     * @brief Detach the knob count reaches zero callback function
+     *
+     */
+    void detachZeroEventCallback(void);
+
+private:
+    static void onEventCallback(void *arg, void *data);
+
+    knob_handle_t _knob_handle; /**< Knob handle */
+
+    int _direction;             /*!< Count increase direction */
+    int _gpio_encoder_a;        /*!< Encoder Pin A */
+    int _gpio_encoder_b;        /*!< Encoder Pin B */
+
+    event_callback_data_t _event_data;
+    std::function<void(int, void *)> _left_event_cb;    /*!< Callback function for knob left event */
+    std::function<void(int, void *)> _right_event_cb;    /*!< Callback function for knob left event */
+    std::function<void(int, void *)> _hight_limit_event_cb;    /*!< Callback function for knob left event */
+    std::function<void(int, void *)> _low_limit_event_cb;    /*!< Callback function for knob left event */
+    std::function<void(int, void *)> _zero_event_cb;    /*!< Callback function for knob left event */
 };

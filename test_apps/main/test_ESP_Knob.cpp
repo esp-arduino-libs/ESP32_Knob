@@ -12,10 +12,11 @@
 #include "esp_idf_version.h"
 #include "esp_log.h"
 #include "unity.h"
-#include "base/iot_knob.h"
 #include "sdkconfig.h"
+#include "ESP_Knob.h"
+#include "esp_log.h"
 
-static const char *TAG = "KNOB TEST";
+static const char *TAG = "ESP_KNOB";
 
 #define TEST_MEMORY_LEAK_THRESHOLD (-400)
 
@@ -24,6 +25,31 @@ static const char *TAG = "KNOB TEST";
 #define KNOB_NUM    3
 
 static knob_handle_t s_knob[KNOB_NUM] = {0};
+
+void onKnobLeftEventCallback(int count, void *usr_data)
+{
+    ESP_LOGI(TAG, "Detect left event, count is %d\n", count);
+}
+
+void onKnobRightEventCallback(int count, void *usr_data)
+{
+    ESP_LOGI(TAG, "Detect right event, count is %d\n", count);
+}
+
+void onKnobHighLimitEventCallback(int count, void *usr_data)
+{
+    ESP_LOGI(TAG, "Detect high limit event, count is %d\n", count);
+}
+
+void onKnobLowLimitEventCallback(int count, void *usr_data)
+{
+    ESP_LOGI(TAG, "Detect low limit event, count is %d\n", count);
+}
+
+void onKnobZeroEventCallback(int count, void *usr_data)
+{
+    ESP_LOGI(TAG, "Detect zero event, count is %d\n", count);
+}
 
 static int get_knob_index(knob_handle_t knob)
 {
@@ -65,14 +91,31 @@ static void knob_zero_cb(void *arg, void *data)
     ESP_LOGI(TAG, "KNOB%d: KNOB_ZERO usr_data: %s", get_knob_index((knob_handle_t)arg), (char *)data);
 }
 
+TEST_CASE("test ESP Knob using Arduino APIs", "[knob][arduino]")
+{
+    ESP_Knob knob(GPIO_KNOB_A, GPIO_KNOB_B);
+
+    knob.begin();
+    knob.invertDirection();
+    knob.attachLeftEventCallback(onKnobLeftEventCallback);
+    knob.attachRightEventCallback(onKnobRightEventCallback);
+    knob.attachHighLimitEventCallback(onKnobHighLimitEventCallback);
+    knob.attachLowLimitEventCallback(onKnobLowLimitEventCallback);
+    knob.attachZeroEventCallback(onKnobZeroEventCallback);
+
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
+    knob.del();
+}
+
 static const char *knob_name[] = {"knob_0",
                                   "knob_1",
                                   "knob_2"
                                  };
 
-TEST_CASE("three knob test", "[knob][iot]")
+TEST_CASE("test three knob using iot APIs", "[knob][iot]")
 {
-    knob_config_t *cfg = calloc(1, sizeof(knob_config_t));
+    knob_config_t *cfg = (knob_config_t *)calloc(1, sizeof(knob_config_t));
     cfg->default_direction = 0;
     cfg->gpio_encoder_a = GPIO_KNOB_A;
     cfg->gpio_encoder_b = GPIO_KNOB_B;
@@ -96,9 +139,9 @@ TEST_CASE("three knob test", "[knob][iot]")
     }
 }
 
-TEST_CASE("one knob test", "[knob][iot]")
+TEST_CASE("test one knob using iot APIs", "[knob][iot]")
 {
-    knob_config_t *cfg = calloc(1, sizeof(knob_config_t));
+    knob_config_t *cfg = (knob_config_t *)calloc(1, sizeof(knob_config_t));
     cfg->default_direction = 0;
     cfg->gpio_encoder_a = GPIO_KNOB_A;
     cfg->gpio_encoder_b = GPIO_KNOB_B;
@@ -117,7 +160,6 @@ TEST_CASE("one knob test", "[knob][iot]")
 
     iot_knob_delete(s_knob[0]);
 }
-
 
 static size_t before_free_8bit;
 static size_t before_free_32bit;
@@ -143,8 +185,20 @@ void tearDown(void)
     check_leak(before_free_32bit, after_free_32bit, "32BIT");
 }
 
-void app_main(void)
+extern "C" void app_main(void)
 {
-    printf("USB STREAM TEST \n");
+    /**
+     *
+     *           __  ___  ___
+     *    /\ /\ /\ \ \/___\/ __\
+     *   / //_//  \/ //  //__\//
+     *  / __ \/ /\  / \_// \/  \
+     *  \/  \/\_\ \/\___/\_____/
+     */
+    printf("           __  ___  ___\r\n");
+    printf("  /\\ /\\ /\\ \\ \\/___\\/ __\\\r\n");
+    printf(" / //_//  \\/ //  //__\\//\r\n");
+    printf("/ __ \\/ /\\  / \\_// \\/  \\\r\n");
+    printf("\\/  \\/\\_\\ \\/\\___/\\_____/\r\n");
     unity_run_menu();
 }
