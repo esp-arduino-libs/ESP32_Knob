@@ -1,49 +1,51 @@
 #include <Arduino.h>
 #include <ESP_Knob.h>
 
-#define GPIO_KNOB_A 1
-#define GPIO_KNOB_B 2
+#define GPIO_NUM_KNOB_PIN_A     1
+#define GPIO_NUM_KNOB_PIN_B     2
 
-ESP_Knob knob = new ESP_Knob(GPIO_KNOB_A, GPIO_KNOB_B);
+ESP_Knob *knob;
 
-static void knob_left_cb(void *arg, void *data)
+void onKnobLeftEventCallback(int count, void *usr_data)
 {
-    Serial.println("KNOB_LEFT Count is %d usr_data: %s", knob.get_count_value(), (char *)data);
+    Serial.printf("Detect left event, count is %d\n", count);
 }
 
-static void knob_right_cb(void *arg, void *data)
+void onKnobRightEventCallback(int count, void *usr_data)
 {
-    Serial.println("KNOB_RIGHT Count is %d usr_data: %s", knob.get_count_value(), (char *)data);
+    Serial.printf("Detect right event, count is %d\n", count);
 }
 
-static void knob_h_lim_cb(void *arg, void *data)
+void onKnobHighLimitEventCallback(int count, void *usr_data)
 {
-    Serial.println("KNOB_H_LIM usr_data: %s", (char *)data);
+    Serial.printf("Detect high limit event, count is %d\n", count);
 }
 
-static void knob_l_lim_cb(void *arg, void *data)
+void onKnobLowLimitEventCallback(int count, void *usr_data)
 {
-    Serial.println("KNOB_L_LIM usr_data: %s", (char *)data);
+    Serial.printf("Detect low limit event, count is %d\n", count);
 }
 
-static void knob_zero_cb(void *arg, void *data)
+void onKnobZeroEventCallback(int count, void *usr_data)
 {
-    Serial.println("KNOB_ZERO usr_data: %s", (char *)data);
+    Serial.printf("Detect zero event, count is %d\n", count);
 }
 
 void setup() {
     Serial.begin(115200);
     Serial.println("ESP_Knob example");
 
-    knob.begin();
-    knob.register_cb(KNOB_LEFT, knob_left_cb, "KNOB_LEFT");
-    knob.register_cb(KNOB_RIGHT, knob_right_cb, "KNOB_RIGHT");
-    knob.register_cb(KNOB_H_LIM, knob_h_lim_cb, "KNOB_H_LIM");
-    knob.register_cb(KNOB_L_LIM, knob_l_lim_cb, "KNOB_L_LIM");
-    knob.register_cb(KNOB_ZERO, knob_zero_cb, "KNOB_ZERO");
+    knob = new ESP_Knob(GPIO_NUM_KNOB_PIN_A, GPIO_NUM_KNOB_PIN_B);
+
+    // knob->invertDirection();
+    knob->begin();
+    knob->attachLeftEventCallback(onKnobLeftEventCallback);
+    knob->attachRightEventCallback(onKnobRightEventCallback);
+    knob->attachHighLimitEventCallback(onKnobHighLimitEventCallback);
+    knob->attachLowLimitEventCallback(onKnobLowLimitEventCallback);
+    knob->attachZeroEventCallback(onKnobZeroEventCallback);
 }
 
 void loop() {
-    Serial.println(knob.read());
-    delay(100);
+    delay(1000);
 }
